@@ -492,6 +492,6 @@ $memcpy_final:
 
 	ret 4
 
-#if defined(__linux__) && defined(__ELF__)
+#if defined(__POSIX__) && defined(__ELF__)
 .section .note.GNU-stack,"",%progbits
 #endif

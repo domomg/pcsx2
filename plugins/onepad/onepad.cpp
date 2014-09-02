@@ -28,7 +28,7 @@
 #include "onepad.h"
 #include "svnrev.h"
 
-#ifdef __LINUX__
+#ifdef __POSIX__
 #include <unistd.h>
 #endif
 #ifdef _MSC_VER
@@ -121,7 +121,7 @@ int curPad, curByte, curCmd, cmdLen;
 int ds2mode = 0; // DS Mode at start
 FILE *padLog = NULL;
 
-pthread_spinlock_t	   mutex_KeyEvent;
+spinlock_type	   mutex_KeyEvent;
 bool mutex_WasInit = false;
 KeyStatus* key_status = NULL;
 
@@ -257,10 +257,10 @@ EXPORT_C_(s32) PADopen(void *pDsp)
 	key_status->Init();
 
 	while (!ev_fifo.empty()) ev_fifo.pop();
-	pthread_spin_init(&mutex_KeyEvent, PTHREAD_PROCESS_PRIVATE);
+	SPININIT(mutex_KeyEvent);
 	mutex_WasInit = true;
 
-#ifdef __LINUX__
+#ifdef __POSIX__
 	JoystickInfo::EnumerateJoysticks(s_vjoysticks);
 #endif
 	return _PADopen(pDsp);
@@ -286,7 +286,7 @@ EXPORT_C_(void) PADclose()
 {
 	while (!ev_fifo.empty()) ev_fifo.pop();
 	mutex_WasInit = false;
-	pthread_spin_destroy(&mutex_KeyEvent);
+	SPINDESTROY(mutex_KeyEvent);
 	_PADclose();
 }
 
@@ -602,15 +602,15 @@ EXPORT_C_(keyEvent*) PADkeyEvent()
 	return &s_event;
 }
 
-#ifdef __LINUX__
+#ifdef __POSIX__
 EXPORT_C_(void) PADWriteEvent(keyEvent &evt)
 {
 	// This function call be called before PADopen. Therefore we cann't
 	// guarantee that the spin lock was initialized
 	if (mutex_WasInit) {
-		pthread_spin_lock(&mutex_KeyEvent);
+		SPINLOCK(&mutex_KeyEvent);
 		ev_fifo.push(evt);
-		pthread_spin_unlock(&mutex_KeyEvent);
+		SPINUNLOCK(&mutex_KeyEvent);
 	}
 }
 #endif

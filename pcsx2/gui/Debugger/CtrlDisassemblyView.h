@@ -80,7 +80,9 @@ private:
 		curAddress = newAddress;
 		selectRangeStart = extend ? std::min(selectRangeStart, newAddress) : newAddress;
 		selectRangeEnd = extend ? std::max(selectRangeEnd, after) : after;
-		updateStatusBarText();
+#ifndef __APPLE__
+        updateStatusBarText(); // TODO OSX something strange here
+#endif
 	}
 
 	void scrollAddressIntoView();

@@ -28,7 +28,7 @@
 #include <gdk/gdkkeysyms.h>
 #include "keyboard.h"
 
-#ifndef __LINUX__
+#ifndef __POSIX__
 char* KeysymToChar(int keysym)
 {
 	LPWORD temp;
@@ -40,7 +40,7 @@ char* KeysymToChar(int keysym)
 
 void SetAutoRepeat(bool autorep)
 {
- #ifdef __LINUX__
+ #ifdef __POSIX__
     if (toggleAutoRepeat)
     {
         if (autorep)
@@ -51,7 +51,7 @@ void SetAutoRepeat(bool autorep)
 #endif
 }
 
-#ifdef __LINUX__
+#ifdef __POSIX__
 static bool s_grab_input = false;
 static bool s_Shift = false;
 static unsigned int  s_previous_mouse_x = 0;
@@ -202,9 +202,9 @@ void PollForX11KeyboardInput(int pad)
 	// Keyboard input send by PCSX2
 	while (!ev_fifo.empty()) {
 		AnalyzeKeyEvent(pad, ev_fifo.front());
-		pthread_spin_lock(&mutex_KeyEvent);
+		SPINLOCK(&mutex_KeyEvent);
 		ev_fifo.pop();
-		pthread_spin_unlock(&mutex_KeyEvent);
+		SPINUNLOCK(&mutex_KeyEvent);
 	}
 
 	// keyboard input

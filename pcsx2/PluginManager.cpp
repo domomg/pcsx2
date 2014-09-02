@@ -861,7 +861,7 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 			.SetUserMsg(_( "The configured %s plugin is not a PCSX2 plugin, or is for an older unsupported version of PCSX2."));
 
 	if( SetEmuVersion != NULL )
-		SetEmuVersion( "PCSX2", (0ul << 24) | (9ul<<16) | (7ul<<8) | 0 );
+		SetEmuVersion( PCSX2_NAME, (0ul << 24) | (9ul<<16) | (7ul<<8) | 0 );
 
 	Name = fromUTF8( GetLibName() );
 	int version = GetLibVersion2( tbl_PluginInfo[pid].typemask );
@@ -1008,7 +1008,7 @@ void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
 
 	static const PS2E_EmulatorInfo myself =
 	{
-		"PCSX2",
+		PCSX2_NAME,
 
 		{ 0, PCSX2_VersionHi, PCSX2_VersionLo, SVN_REV },
 
@@ -1184,7 +1184,7 @@ void SysCorePlugins::Open()
 		// If GS doesn't support GSopen2, need to wait until call to GSopen
 		// returns to populate pDsp.  If it does, can initialize other plugins
 		// at same time as GS, as long as GSopen2 does not subclass its window.
-#ifdef __LINUX__
+#ifdef __POSIX__
 		// On linux, application have also a channel (named display) to communicate with the
 		// Xserver. The safe rule is 1 thread, 1 channel. In our case we use the display in
 		// several places. Save yourself of multithread headache. Wait few seconds the end of 

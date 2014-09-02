@@ -27,23 +27,44 @@
 
 Threading::Semaphore::Semaphore()
 {
-	sem_init( &m_sema, false, 0 );
+	m_sema = nullptr;
+	Reset();
 }
 
 Threading::Semaphore::~Semaphore() throw()
 {
-	sem_destroy( &m_sema );
+	Release();
+}
+
+void Threading::Semaphore::Release() {
+	if (m_sema) {
+		//TODO OSX this doesn't work as excepted
+	#ifdef __APPLE__
+		//dispatch_release(m_sema);
+	#else
+		sem_destroy( &m_sema );
+	#endif
+		m_sema = nullptr;
+	}
 }
 
 void Threading::Semaphore::Reset()
 {
-	sem_destroy( &m_sema );
-	sem_init( &m_sema, false, 0 );
+	Release();
+#ifdef __APPLE__
+	m_sema = dispatch_semaphore_create(Semaphore::INITIAL_VALUE);
+#else
+	sem_init( &m_sema, false, Semaphore::INITIAL_VALUE );
+#endif
 }
 
 void Threading::Semaphore::Post()
 {
+#ifdef __APPLE__
+	if (m_sema)dispatch_semaphore_signal(m_sema);
+#else
 	sem_post( &m_sema );
+#endif
 }
 
 void Threading::Semaphore::Post( int multiple )
@@ -55,7 +76,7 @@ void Threading::Semaphore::Post( int multiple )
 	while( multiple > 0 )
 	{
 		multiple--;
-		sem_post( &m_sema );
+		Post();
 	}
 #endif
 }
@@ -63,15 +84,34 @@ void Threading::Semaphore::Post( int multiple )
 void Threading::Semaphore::WaitWithoutYield()
 {
 	pxAssertMsg( !wxThread::IsMain(), "Unyielding semaphore wait issued from the main/gui thread.  Please use Wait() instead." );
-	sem_wait( &m_sema );
+	SEMWAIT( m_sema );
 }
 
+#ifdef __APPLE__
+bool Threading::Semaphore::WaitWithoutYield( const wxTimeSpan& timeout2 )
+{
+	wxTimeSpan timeout = timeout2;
+	const wxTimeSpan substr = wxTimeSpan::Milliseconds(1);
+	int ret=3;
+
+	while ( timeout.IsPositive() ) {
+		ret = dispatch_semaphore_wait(m_sema, DISPATCH_TIME_NOW);
+
+		if (ret==0)
+			break;
+		timeout-=substr;
+		Sleep(substr.GetMilliseconds().GetLo());
+	}
+	return ret==0;
+}
+#else
 bool Threading::Semaphore::WaitWithoutYield( const wxTimeSpan& timeout )
 {
 	wxDateTime megafail( wxDateTime::UNow() + timeout );
 	const timespec fail = { megafail.GetTicks(), megafail.GetMillisecond() * 1000000 };
 	return sem_timedwait( &m_sema, &fail ) == 0;
 }
+#endif
 
 
 // This is a wxApp-safe implementation of Wait, which makes sure and executes the App's
@@ -84,12 +124,12 @@ void Threading::Semaphore::Wait()
 #if wxUSE_GUI
 	if( !wxThread::IsMain() || (wxTheApp == NULL) )
 	{
-		sem_wait( &m_sema );
+		SEMWAIT( m_sema );
 	}
 	else if( _WaitGui_RecursionGuard( L"Semaphore::Wait" ) )
 	{
 		ScopedBusyCursor hourglass( Cursor_ReallyBusy );
-		sem_wait( &m_sema );
+		SEMWAIT( m_sema );
 	}
 	else
 	{
@@ -98,7 +138,7 @@ void Threading::Semaphore::Wait()
 			YieldToMain();
 	}
 #else
-	sem_wait( &m_sema );
+	SEMWAIT( m_sema );
 #endif
 }
 
@@ -169,7 +209,9 @@ void Threading::Semaphore::WaitNoCancel( const wxTimeSpan& timeout )
 
 int Threading::Semaphore::Count()
 {
-	int retval;
+	int retval=Semaphore::INITIAL_VALUE;
+#ifndef __APPLE__ //// TODO OSX dunno if dispatch needs to implement this
 	sem_getvalue( &m_sema, &retval );
+#endif
 	return retval;
 }

@@ -76,7 +76,7 @@ void RecentIsoManager::OnChangedSelection( wxCommandEvent& evt )
 
 	ScopedCoreThreadPopup stopped_core;
 
-#ifdef __LINUX__
+#ifdef __POSIX__
 	// Likely not what was intended, but it compiles for the moment...
 	SwapOrReset_Iso( NULL, stopped_core, m_Items[i].Filename, GetMsg_IsoImageChanged());
 #else
@@ -126,7 +126,7 @@ void RecentIsoManager::Repopulate()
 	// wxwidgets deletes the group, but when you start adding radio menu items again, 
 	// it trys to add them to a group that doesn't exist. Since the group doesn't exist, 
 	// it starts a new group, but it also spews a couple warnings about it in Linux.
-#ifdef __LINUX__
+#ifdef __POSIX__
 	m_Menu->Remove( m_Menu->Append( -1, wxEmptyString ) );
 #endif
 	//Note: the internal recent iso list (m_Items) has the most recent item last (also at the INI file)

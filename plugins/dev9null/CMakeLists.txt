@@ -73,10 +73,13 @@ add_library(${Output} SHARED
 			${dev9nullLinuxSources}
 			${dev9nullLinuxHeaders})
 
-if(Linux)
+if(Linux OR APPLE)
 	# link target with gtk2
 	target_link_libraries(${Output} ${GTK2_LIBRARIES})
-endif(Linux)
+
+	#include GTK
+	include_directories(${GTK2_INCLUDE_DIRS})
+endif(Linux OR APPLE)
 
 # User flags options
 if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")

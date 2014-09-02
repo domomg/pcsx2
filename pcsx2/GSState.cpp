@@ -105,7 +105,7 @@ void LoadGSState(const wxString& file)
 	// Always set gsIrq callback -- GS States are always exclusionary of MTGS mode
 	GSirqCallback( gsIrq );
 
-	ret = GSopen(&pDsp, "PCSX2", 0);
+	ret = GSopen(&pDsp, PCSX2_NAME, 0);
 	if (ret != 0)
 		throw Exception::PluginOpenError( PluginId_GS );
 

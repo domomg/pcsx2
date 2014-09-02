@@ -121,13 +121,33 @@ void Threading::Mutex::AcquireWithoutYield()
 	pthread_mutex_lock( &m_mutex );
 }
 
-bool Threading::Mutex::AcquireWithoutYield( const wxTimeSpan& timeout )
+#ifdef __APPLE__
+bool Threading::Mutex::AcquireWithoutYield( const wxTimeSpan& timeout2 )
+{
+	wxTimeSpan timeout = timeout2;
+	int ret=3;
+	const int decwait = 1;
+
+	do {
+		ret = pthread_mutex_trylock( &m_mutex );
+
+		if (ret==0)
+			break;
+		timeout-=wxTimeSpan(0,0,0,decwait);
+		Sleep(decwait);
+	} while ( timeout.IsPositive() );
+
+
+	return ret==0 || ret==16; // TODO OSX hack  - what is cancel trying to do?
+}
+#else
+bool Threading::Mutex::AcquireWithoutYield( const wxTimeSpan& timeout2 )
 {
 	wxDateTime megafail( wxDateTime::UNow() + timeout );
 	const timespec fail = { megafail.GetTicks(), megafail.GetMillisecond() * 1000000 };
 	return pthread_mutex_timedlock( &m_mutex, &fail ) == 0;
 }
-
+#endif
 void Threading::Mutex::Release()
 {
 	pthread_mutex_unlock( &m_mutex );

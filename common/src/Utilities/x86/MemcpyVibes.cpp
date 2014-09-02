@@ -159,7 +159,13 @@ __fi void memcpy_vibes(void * dest, const void * src, int size) {
 
 // Since MemcpyVibes is already in the project, I'll just tuck the Linux version of memcpy_amd_qwc here for the moment,
 // to get around compilation issues with having it in the headers.
-#ifdef __LINUX__
+#if defined(__APPLE__)
+	__fi void memcpy_amd_qwc(void *dest, const void *src, size_t qwc)
+	{
+		// TODO OPTIMIZE ME
+		memcpy(dest,src,qwc);
+	}
+#elif defined(__POSIX__)
 
 	// This can be moved later, but Linux doesn't even compile memcpyFast.cpp, so I figured I'd stick it here for now.
 	// Quadword Copy! Count is in QWCs (128 bits).  Neither source nor dest need to be aligned.

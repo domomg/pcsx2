@@ -17,6 +17,17 @@ set(CommonFlags
 # set optimization flags
 set(OptimizationFlags
 	-falign-functions
+	-fgcse
+	-foptimize-sibling-calls
+	-freorder-blocks
+	-fsched-interblock
+	-fstrict-overflow
+	-funit-at-a-time
+)
+
+# These opt flags are not for CLANG 
+if(NOT USE_CLANG AND NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+add_definitions(${OptimizationFlags}
 	-falign-jumps
 	-falign-labels
 	-falign-loops
@@ -27,20 +38,15 @@ set(OptimizationFlags
 	-fcse-skip-blocks
 	-fdefer-pop
 	-fdelete-null-pointer-checks
-	-fgcse
 	-fgcse-lm
 	-fif-conversion
 	-fif-conversion2
 	-fmerge-constants
-	-foptimize-sibling-calls
 	-fpeephole2
 	-fregmove
-	-freorder-blocks
 	-freorder-functions 
 	-frerun-cse-after-loop
-	-fsched-interblock
 	-fsched-spec
-	-fstrict-overflow
 	-fthread-jumps
 	-ftree-ccp
 	-ftree-ch
@@ -52,13 +58,13 @@ set(OptimizationFlags
 	-ftree-pre
 	-ftree-sra
 	-ftree-ter
-	-ftree-vrp
-	-funit-at-a-time)
+	-ftree-vrp)
+endif(NOT USE_CLANG AND NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") 
 
 #Clang doesn't support a few common flags that GCC does.
-if(NOT USE_CLANG)
+if(NOT USE_CLANG AND NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 	add_definitions(${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse)
-endif(NOT USE_CLANG)
+endif(NOT USE_CLANG AND NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") 
 
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)

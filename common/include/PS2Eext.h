@@ -161,7 +161,7 @@ struct PluginConf
     }
 };
 
-#ifdef __LINUX__
+#ifdef __POSIX__
 
 static void SysMessage(const char *fmt, ...)
 {

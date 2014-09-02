@@ -87,10 +87,14 @@ else()
     target_link_libraries(${Output} ${SDL_LIBRARY})
 endif()
 
-if(Linux)
+if(Linux OR APPLE)
 	# link target with gtk2
 	target_link_libraries(${Output} ${GTK2_LIBRARIES})
-endif(Linux)
+
+	#include GTK
+	include_directories(${GTK2_INCLUDE_DIRS})
+endif(Linux OR APPLE)
+
 
 # link target with X11
 target_link_libraries(${Output} ${X11_LIBRARIES})

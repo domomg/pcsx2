@@ -26,7 +26,7 @@ using namespace std;
 const u8 version  = PS2E_SPU2_VERSION;
 const u8 revision = 0;
 const u8 build    = 8;    // increase that with each version
-const u32 minor = 0;    // increase that with each version
+const u32 _minor = 0;    // increase that with each version
 
 // ADSR constants
 #define ATTACK_MS      494L
@@ -96,7 +96,7 @@ EXPORT_C_(char*) PS2EgetLibName()
 
 EXPORT_C_(u32) PS2EgetLibVersion2(u32 type)
 {
-	return (version << 16) | (revision << 8) | build | (minor << 24);
+	return (version << 16) | (revision << 8) | build | (_minor << 24);
 }
 
 void __Log(char *fmt, ...)

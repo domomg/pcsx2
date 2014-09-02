@@ -5,7 +5,7 @@
 SET(FIND_LIBRARY_USE_LIB64_PATHS FALSE)
 
 ## Linux only libraries
-if(Linux)
+if(Linux OR APPLE)
     # Most plugins (if not all) and PCSX2 core need gtk2, so set the required flags
     find_package(GTK2 REQUIRED gtk)
     if(GTK2_FOUND)

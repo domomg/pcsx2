@@ -34,7 +34,7 @@ extern Config conf;
 extern const unsigned char version;
 extern const unsigned char revision;
 extern const unsigned char build;
-extern const unsigned int minor;
+extern const unsigned int _minor;
 
 void SaveConfig();
 void LoadConfig();

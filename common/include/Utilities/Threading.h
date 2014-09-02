@@ -15,13 +15,26 @@
 
 #pragma once
 
-#include <semaphore.h>
 #include <errno.h> // EBUSY
 #include <pthread.h>
 
 #include "Pcsx2Defs.h"
 #include "ScopedPtr.h"
 #include "TraceLog.h"
+
+// Apple's semaphore support is broken - header exist, but runtime issues follow for unnamed semaphores (which PCSX2 uses)
+// ...and r00t access needed for named semaphores...
+// Fisher Price Unix offers similar API which seems to work nicely.
+#ifdef __APPLE__
+#include <dispatch/dispatch.h>
+
+#define SEMWAIT(sema) dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+
+#else
+#include <semaphore.h>
+
+#define SEMWAIT(sema) sem_wait( &sema )
+#endif
 
 #undef Yield		// release the burden of windows.h global namespace spam.
 
@@ -253,9 +266,15 @@ namespace Threading
 	class Semaphore
 	{
 	protected:
+#ifdef __APPLE__
+		dispatch_semaphore_t m_sema;
+#else
 		sem_t m_sema;
+#endif
+
 
 	public:
+		int const INITIAL_VALUE = 0;
 		Semaphore();
 		virtual ~Semaphore() throw();
 
@@ -271,6 +290,8 @@ namespace Threading
 
 		void Wait();
 		bool Wait( const wxTimeSpan& timeout );
+	protected:
+		void Release();
 	};
 
 	class Mutex
@@ -408,7 +429,7 @@ namespace Threading
 		ScopedLock m_lock;
 		volatile __aligned(4) bool& m_bool;
 
-#ifdef __LINUX__
+#ifdef __POSIX__
 		ScopedLockBool(Mutex& mutexToLock, volatile bool& isLockedBool)
 #else
 		ScopedLockBool(Mutex& mutexToLock, volatile __aligned(4) bool& isLockedBool)

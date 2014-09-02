@@ -370,7 +370,7 @@ void i18n_SetLanguagePath()
 	// default location for windows
 	wxLocale::AddCatalogLookupPathPrefix( wxGetCwd() );
 	// additional location for linux
-#ifdef __LINUX__
+#ifdef __POSIX__
 	wxLocale::AddCatalogLookupPathPrefix( PathDefs::GetLangs().ToString() );
 #endif
 

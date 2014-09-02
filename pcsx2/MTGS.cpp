@@ -190,7 +190,7 @@ void SysMtgsThread::OpenPlugin()
 	if( GSopen2 != NULL )
 		result = GSopen2( (void*)pDsp, 1 | (renderswitch ? 4 : 0) );
 	else
-		result = GSopen( (void*)pDsp, "PCSX2", renderswitch ? 2 : 1 );
+		result = GSopen( (void*)pDsp, const_cast<char*>(PCSX2_NAME), renderswitch ? 2 : 1 );
 
 	// Vsync on / off ?
 	if( renderswitch )

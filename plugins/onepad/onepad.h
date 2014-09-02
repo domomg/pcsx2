@@ -41,13 +41,27 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <pthread.h>
+
+#ifdef __APPLE__
+#include <libkern/OSAtomic.h>
+typedef OSSpinLock spinlock_type;
+#define SPINLOCK(mutex_spinlock) OSSpinLockLock(mutex_spinlock)
+#define SPINUNLOCK(mutex_spinlock) OSSpinLockUnlock(mutex_spinlock)
+#define SPININIT(mutex_spinlock) mutex_spinlock = OS_SPINLOCK_INIT
+#define SPINDESTROY(mutex_spinlock) SPININIT(mutex_spinlock)
+#else
+#define SPINLOCK(mutex_spinlock) pthread_spin_lock(mutex_spinlock)
+#define SPINUNLOCK(mutex_spinlock) pthread_spin_unlock(mutex_spinlock)
+#define SPININIT(mutex_spinlock) pthread_spin_init(&mutex_spinlock, PTHREAD_PROCESS_PRIVATE)
+#define SPINDESTROY(mutex_spinlock) pthread_spin_destroy(&mutex_spinlock);
+typedef pthread_spinlock_t spinlock_type;
+#endif
 using namespace std;
 
 #define PADdefs
 #include "PS2Edefs.h"
 
-#ifdef __LINUX__
+#ifdef __POSIX__
 #include "joystick.h"
 #endif
 #include "bitwise.h"
@@ -126,7 +140,7 @@ enum gamePadValues
 
 extern keyEvent event;
 extern queue<keyEvent> ev_fifo;
-extern pthread_spinlock_t	mutex_KeyEvent;
+extern spinlock_type	mutex_KeyEvent;
 
 void clearPAD(int pad);
 s32  _PADopen(void *pDsp);

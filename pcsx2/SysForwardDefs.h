@@ -20,6 +20,8 @@ static const int PCSX2_VersionMid	= 3;
 static const int PCSX2_VersionLo	= 0;
 static const bool PCSX2_isReleaseVersion = 0;
 
+const char* const PCSX2_NAME = "PCSX2";
+
 class SysCoreThread;
 class CpuInitializerSet;
 

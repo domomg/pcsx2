@@ -428,13 +428,19 @@ int EnumeratePluginsInFolder( const wxDirName& searchpath, wxArrayString* dest )
 #ifdef __WXMSW__
 	// Windows pretty well has a strict "must end in .dll" rule.
 	wxString pattern( L"*%s" );
+	const wxChar *shared_obj_ext = wxDynamicLibrary::GetDllExt();
+#elif defined(__APPLE__)
+	// OSX ends .dylib with any version string before extension
+	wxString pattern( L"*%s" );
+	const char *shared_obj_ext = "dylib"; // TODO OSX wxDynamicLibrary::GetDllExt() returns "." ?
 #else
 	// Other platforms seem to like to version their libs after the .so extension:
 	//    blah.so.3.1.fail?
 	wxString pattern( L"*%s*" );
+	const wxChar *shared_obj_ext = wxDynamicLibrary::GetDllExt();
 #endif
 
-	wxDir::GetAllFiles( searchpath.ToString(), realdest, pxsFmt( pattern, wxDynamicLibrary::GetDllExt()), wxDIR_FILES );
+	wxDir::GetAllFiles( searchpath.ToString(), realdest, pxsFmt( pattern, shared_obj_ext), wxDIR_FILES );
 	
 	// SECURITY ISSUE:  (applies primarily to Windows, but is a good idea on any platform)
 	//   The search folder order for plugins can vary across operating systems, and in some poorly designed

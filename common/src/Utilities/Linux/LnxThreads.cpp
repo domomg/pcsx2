@@ -16,14 +16,21 @@
 
 #include "../PrecompiledHeader.h"
 #include "PersistentThread.h"
-#include <sys/prctl.h>
 #include <unistd.h>
+
+
+#if defined(HAVE_PTHREAD_SETNAME_NP) || defined(__APPLE__) // available since OSX 10.6
+	#define SETTHREADNAME(name) pthread_setname_np(name);
+#else
+	#include <sys/prctl.h>
+	#define SETTHREADNAME(name) prctl(PR_SET_NAME, name, 0, 0, 0);
+#endif
 
 // We wont need this until we actually have this more then just stubbed out, so I'm commenting this out
 // to remove an unneeded dependency.
 //#include "x86emitter/tools.h"
 
-#if !defined(__LINUX__) && !defined(__WXMAC__)
+#if !defined(__POSIX__)
 
 #	pragma message( "LnxThreads.cpp should only be compiled by projects or makefiles targeted at Linux/Mac distros.")
 
@@ -72,21 +79,37 @@ u64 Threading::GetThreadTicksPerSecond()
 	return hertz;
 }
 
+#ifdef __APPLE__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#warning OSX version is not fully implemented. Returns absurd values.
+#endif
+
 u64 Threading::GetThreadCpuTime()
 {
 	// Get the cpu time for the current thread.  Should be a measure of total time the
 	// thread has used on the CPU (scaled by the value returned by GetThreadTicksPerSecond(),
 	// which typically would be an OS-provided scalar or some sort).
-
-	clockid_t cid;
+	struct timespec ts;
+#ifdef __APPLE__
+	clock_serv_t cclock;
+	mach_timespec_t mts;
+	host_get_clock_service(mach_host_self(), REALTIME_CLOCK, &cclock);
+	clock_get_time(cclock, &mts);
+	mach_port_deallocate(mach_task_self(), cclock);
+	ts.tv_sec = mts.tv_sec;
+	ts.tv_nsec = mts.tv_nsec;
+#else
+	clock_t cid;
 	int err = pthread_getcpuclockid(pthread_self(), &cid);
 	if (err) return 0;
 
-	struct timespec ts;
 	err = clock_gettime(cid, &ts);
 	if (err) return 0;
-    unsigned long timeJiff = (ts.tv_sec*1e6 + ts.tv_nsec / 1000)/1e6 * GetThreadTicksPerSecond();
+#endif
+	unsigned long timeJiff = (ts.tv_sec*1e6 + ts.tv_nsec / 1000)/1e6 * GetThreadTicksPerSecond();
 
+    //printf("1CPUGET %li %li %lu %llu\n", ts.tv_sec, ts.tv_nsec, timeJiff, GetThreadTicksPerSecond());
 	return timeJiff;
 }
 
@@ -99,15 +122,28 @@ u64 Threading::pxThread::GetCpuTime() const
 
 	if (!m_native_id) return 0;
 
-	clockid_t cid;
+	struct timespec ts;
+	//printf("CPUGET\n");
+#ifdef __APPLE__
+	clock_serv_t cclock;
+	mach_timespec_t mts;
+	host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+	clock_get_time(cclock, &mts);
+	mach_port_deallocate(m_native_id, cclock);
+	ts.tv_sec = mts.tv_sec;
+	ts.tv_nsec = mts.tv_nsec;
+#else
+	clock_t cid;
 	int err = pthread_getcpuclockid(m_native_id, &cid);
 	if (err) return 0;
 
-	struct timespec ts;
+
 	err = clock_gettime(cid, &ts);
 	if (err) return 0;
-    unsigned long timeJiff = (ts.tv_sec*1e6 + ts.tv_nsec / 1000)/1e6 * GetThreadTicksPerSecond();
+#endif
+	unsigned long timeJiff = (ts.tv_sec*1e6 + ts.tv_nsec / 1000)/1e6 * GetThreadTicksPerSecond();
 
+    //printf("2CPUGET %li %li %lu %llu\n", ts.tv_sec, ts.tv_nsec, timeJiff, GetThreadTicksPerSecond());
 	return timeJiff;
 }
 
@@ -127,7 +163,7 @@ void Threading::pxThread::_DoSetThreadName( const char* name )
 {
 	// Extract of manpage: "The name can be up to 16 bytes long, and should be
 	//						null-terminated if it contains fewer bytes."
-	prctl(PR_SET_NAME, name, 0, 0, 0);
+	SETTHREADNAME(name);
 }
 
 #endif

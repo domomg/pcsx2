@@ -26,6 +26,12 @@
 #endif
 #endif
 
+#if defined (__LINUX__) || defined(__APPLE__)
+#if !defined(__POSIX__)
+#	define __POSIX__
+#endif
+#endif
+
 #include "Pcsx2Types.h"
 
 #ifdef _MSC_VER
@@ -239,13 +245,23 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 
 #	define __naked						// GCC lacks the naked specifier
 #	define __assume(cond)	((void)0)	// GCC has no equivalent for __assume
+
+#ifndef __APPLE__
 #	define CALLBACK			__attribute__((stdcall))
+#else
+#	define CALLBACK
+#endif
 
 // Inlining note: GCC needs ((unused)) attributes defined on inlined functions to suppress
 // warnings when a static inlined function isn't used in the scope of a single file (which
 // happens *by design* like all the friggen time >_<)
 
+#ifndef __APPLE__
 #	define __fastcall		__attribute__((fastcall))
+#else
+#	define __fastcall
+#endif
+
 #	define _inline			__inline__ __attribute__((unused))
 #	ifdef NDEBUG
 #		define __forceinline	__attribute__((always_inline,unused))

@@ -718,7 +718,7 @@ Pcsx2App::Pcsx2App()
 	m_id_ProgramLogBox	= wxID_ANY;
 	m_ptr_ProgramLog	= NULL;
 
-	SetAppName( L"PCSX2" );
+	SetAppName( wxString::FromAscii(PCSX2_NAME) );
 	BuildCommandHash();
 }
 

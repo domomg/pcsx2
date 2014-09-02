@@ -48,7 +48,7 @@ extern FILE *spu2Log;
 extern const u8 version;
 extern const u8 revision;
 extern const u8 build;
-extern const u32 minor;
+extern const u32 _minor;
 extern char *libraryName;
 
 typedef struct

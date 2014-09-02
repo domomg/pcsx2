@@ -42,6 +42,7 @@
 
  * OSflags:
 	__LINUX__ (linux OS)
+    __APPLE__ (OSX)
 	_WIN32 (win32 OS)
 
  * common return values (for ie. GSinit):

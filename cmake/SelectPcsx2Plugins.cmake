@@ -123,7 +123,7 @@ endif()
 #---------------------------------------
 #			GSnull
 #---------------------------------------
-if(GTK2_FOUND AND EXTRA_PLUGINS)
+if(GTK2_FOUND AND (EXTRA_PLUGINS OR APPLE))
     set(GSnull TRUE)
 endif()
 #---------------------------------------
@@ -223,7 +223,7 @@ endif()
 #---------------------------------------
 #			SPU2null
 #---------------------------------------
-if(GTK2_FOUND AND EXTRA_PLUGINS)
+if(GTK2_FOUND AND (EXTRA_PLUGINS OR APPLE))
     set(SPU2null TRUE)
 endif()
 #---------------------------------------
@@ -237,7 +237,7 @@ endif()
 #           -SDL
 #           -common_libs
 #---------------------------------------
-if(ALSA_FOUND AND PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDL_FOUND AND common_libs)
+if((ALSA_FOUND OR PORTAUDIO_FOUND) AND SOUNDTOUCH_FOUND AND SDL_FOUND AND common_libs)
 	set(spu2-x TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x")
 	set(spu2-x FALSE)

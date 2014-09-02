@@ -17,6 +17,8 @@
 
 // Dependencies.h : Contains classes required by all Utilities headers.
 //   This file is included by most .h files provided by the Utilities class.
+#include <string>
+#include <algorithm>
 
 #include "pxForwardDefs.h"
 

@@ -24,7 +24,7 @@
 
 #include "onepad.h"
 
-#ifdef __LINUX__
+#ifdef __POSIX__
 
 #include "Linux/linux.h"
 

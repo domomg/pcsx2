@@ -65,8 +65,8 @@
 	would use in the same case
 */
 
-
-#ifndef __SIZE_T
+// TODO OSX might be just clang issue
+#if !defined(__SIZE_T) && !defined(__APPLE__)
 #define __SIZE_T
 typedef unsigned int size_t;
 #endif
@@ -845,7 +845,7 @@ static __inline__ __attribute__((always_inline)) unsigned long long __xgetbv(uns
 
 // gcc 4.8 define __rdtsc but unfortunately the compiler crash...
 // The redefine allow to skip the gcc __rdtsc version -- Gregory
-#ifdef __LINUX__
+#ifdef __POSIX__
 static __inline__ __attribute__((always_inline)) unsigned long long __pcsx2__rdtsc(void)
 #else
 static __inline__ __attribute__((always_inline)) unsigned long long __rdtsc(void)
@@ -858,7 +858,7 @@ static __inline__ __attribute__((always_inline)) unsigned long long __rdtsc(void
 
 
 /*** Interrupts ***/
-#ifndef __LINUX__
+#ifndef __POSIX__
 static __inline__ __attribute__((always_inline)) void __debugbreak(void)
 {
 	__asm__("int $3");

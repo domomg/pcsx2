@@ -46,7 +46,7 @@ const char* s_iniFilename = "GSnull.ini";
 GSVars gs;
 
 // Because I haven't bothered to get GSOpen2 working in Windows yet in GSNull.
-#ifdef __LINUX__
+#ifdef __POSIX__
 #define USE_GSOPEN2
 #endif
 
@@ -65,10 +65,10 @@ EXPORT_C_(char*) PS2EgetLibName()
 {
 #ifdef _MSC_VER
 	sprintf_s( libraryName, "GSnull Driver %lld%s",SVN_REV,	SVN_MODS ? "m" : "");
-	return libraryName;	
 #else
-	return "GSnull Driver";
+	snprintf( libraryName, sizeof(libraryName), "GSnull Driver %d%s", 1, 0 ? "m" : "");
 #endif
+	return libraryName;
 }
 
 EXPORT_C_(u32) PS2EgetLibVersion2(u32 type)

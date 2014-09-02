@@ -25,7 +25,7 @@ __aligned16 x86capabilities x86caps;
 static __pagealigned u8 recSSE[__pagesize];
 static __pagealigned u8 targetFXSAVE[512];
 
-#ifdef __LINUX__
+#ifdef __POSIX__
 #	include <sys/time.h>
 #	include <errno.h>
 #endif
@@ -93,7 +93,7 @@ s64 x86capabilities::_CPUSpeedHz( u64 time ) const
 
 	do {
 		timeStart = GetCPUTicks();
-#ifdef __LINUX__
+#ifdef __POSIX__
 		startCycle = __pcsx2__rdtsc();
 #else
 		startCycle = __rdtsc();
@@ -102,7 +102,7 @@ s64 x86capabilities::_CPUSpeedHz( u64 time ) const
 
 	do {
 		timeStop = GetCPUTicks();
-#ifdef __LINUX__
+#ifdef __POSIX__
 		endCycle = __pcsx2__rdtsc();
 #else
 		endCycle = __rdtsc();

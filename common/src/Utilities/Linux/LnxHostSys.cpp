@@ -28,6 +28,18 @@ extern void SignalExit(int sig);
 
 static const uptr m_pagemask = getpagesize()-1;
 
+#ifdef __APPLE__
+int const _MMAP_PROT_FLAGS = (PROT_EXEC | PROT_READ | PROT_WRITE);
+int const _MMAP_R_PROT_FLAGS = (PROT_EXEC | PROT_READ | PROT_WRITE);
+int const _MMAP_MAP_FLAGS = (MAP_SHARED | MAP_ANON);
+int const MMAP_OFFS = 0;
+#else //__LINUX__
+int const _MMAP_FLAGS = (PROT_NONE);
+int const _MMAP_R_PROT_FLAGS = (PROT_NONE);
+int const _MMAP_MAP_FLAGS = (MAP_PRIVATE | MAP_ANONYMOUS);
+int const _MMAP_OFFS = -1;
+#endif
+
 // Linux implementation of SIGSEGV handler.  Bind it using sigaction().
 static void SysPageFaultSignalFilter( int signal, siginfo_t *siginfo, void * )
 {
@@ -108,7 +120,7 @@ static bool _memprotect( void* baseaddr, size_t size, const PageProtectionMode& 
 
 	if (mode.CanWrite())	lnxmode |= PROT_WRITE;
 	if (mode.CanRead())		lnxmode |= PROT_READ;
-	if (mode.CanExecute())	lnxmode |= PROT_EXEC | PROT_READ;
+	if (mode.CanExecute())	lnxmode |= PROT_EXEC | PROT_READ; // TODO APPLE mmap issue
 
 	const int result = mprotect( baseaddr, size, lnxmode );
 
@@ -143,7 +155,7 @@ void* HostSys::MmapReservePtr(void* base, size_t size)
 	// or anonymous source, with PROT_NONE (no-access) permission.  Since the mapping
 	// is completely inaccessible, the OS will simply reserve it and will not put it
 	// against the commit table.
-	return mmap(base, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	return mmap(base, size, _MMAP_R_PROT_FLAGS, _MMAP_MAP_FLAGS, MMAP_OFFS, 0);
 }
 
 bool HostSys::MmapCommitPtr(void* base, size_t size, const PageProtectionMode& mode)
@@ -203,7 +215,7 @@ void* HostSys::Mmap(uptr base, size_t size)
 
 	// MAP_ANONYMOUS - means we have no associated file handle (or device).
 
-	return mmap((void*)base, size, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	return mmap((void*)base, size, _MMAP_PROT_FLAGS, _MMAP_MAP_FLAGS, MMAP_OFFS, 0);
 }
 
 void HostSys::Munmap(uptr base, size_t size)

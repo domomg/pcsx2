@@ -18,8 +18,12 @@
 #ifdef WIN32
 #	include <Windows.h>
 #	undef Yield
+#elif defined(__APPLE__)
+#	include <aio.h>
+    typedef aiocb _AIO_CTX;
 #else
 #	include <libaio.h>
+    typedef io_context_t _AIO_CTX;
 #endif
 
 class AsyncFileReader
@@ -72,7 +76,7 @@ class FlatFileReader : public AsyncFileReader
 	bool asyncInProgress;
 #else
 	int m_fd; // FIXME don't know if overlap as an equivalent on linux
-	io_context_t m_aio_context;
+	_AIO_CTX m_aio_context;
 #endif
 
 public:

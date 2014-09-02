@@ -64,7 +64,7 @@ VU_Thread::VU_Thread(BaseVUmicroCPU*& _vuCPU, VURegs& _vuRegs) :
 
 VU_Thread::~VU_Thread() throw()
 {
-	pxThread::Cancel();
+	pxThread::Cancel(); // TODO OSX on shutdown blocks for some reason?
 }
 
 void VU_Thread::Reset()

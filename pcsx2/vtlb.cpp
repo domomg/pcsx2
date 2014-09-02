@@ -313,12 +313,12 @@ void __fastcall vtlb_memWrite128(u32 mem, const mem128_t *value)
 	}
 }
 
-template mem8_t vtlb_memRead<mem8_t>(u32 mem);
-template mem16_t vtlb_memRead<mem16_t>(u32 mem);
-template mem32_t vtlb_memRead<mem32_t>(u32 mem);
-template void vtlb_memWrite<mem8_t>(u32 mem, mem8_t data);
-template void vtlb_memWrite<mem16_t>(u32 mem, mem16_t data);
-template void vtlb_memWrite<mem32_t>(u32 mem, mem32_t data);
+template mem8_t __fastcall vtlb_memRead<mem8_t>(u32 mem);
+template mem16_t __fastcall vtlb_memRead<mem16_t>(u32 mem);
+template mem32_t __fastcall vtlb_memRead<mem32_t>(u32 mem);
+template void __fastcall vtlb_memWrite<mem8_t>(u32 mem, mem8_t data);
+template void __fastcall vtlb_memWrite<mem16_t>(u32 mem, mem16_t data);
+template void __fastcall vtlb_memWrite<mem32_t>(u32 mem, mem32_t data);
 
 // --------------------------------------------------------------------------------------
 //  TLB Miss / BusError Handlers
@@ -380,7 +380,7 @@ static __ri void vtlb_Miss(u32 addr,u32 mode)
 
 	// The exception terminate the program on linux which is very annoying
 	// Just disable it for the moment
-#ifdef __LINUX__
+#ifdef __POSIX__
 	if (0)
 #else
 	if( IsDevBuild )
@@ -401,7 +401,7 @@ static __ri void vtlb_BusError(u32 addr,u32 mode)
 {
 	// The exception terminate the program on linux which is very annoying
 	// Just disable it for the moment
-#ifdef __LINUX__
+#ifdef __POSIX__
 	if (0)
 #else
 	if( IsDevBuild )
